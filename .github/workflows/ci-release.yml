@@ -71,6 +71,7 @@ jobs:
           if ($env:WINDOWS_PUBLISHER_NAME) { $args += "--config.win.publisherName=$env:WINDOWS_PUBLISHER_NAME" }
           npx electron-builder @args
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          Copy-Item "release/TaskFlow-$($env:GITHUB_REF_NAME.Substring(1))-Setup.exe" "release/TaskFlow-Setup.exe"
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}

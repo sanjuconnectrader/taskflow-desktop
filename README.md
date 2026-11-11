@@ -2,6 +2,8 @@
 
 Production releases include `latest.yml` and the Windows installer. Installed builds containing the updater check the shared backend for a published release, ask before downloading, verify the download checksum and offer to restart for installation. Releases are currently unsigned because no Windows code-signing certificate is configured; HTTPS and checksums protect transport and integrity, but do not provide publisher-signature verification. Windows may display a SmartScreen warning. Configure `WINDOWS_CSC_LINK`, `WINDOWS_CSC_KEY_PASSWORD`, and `WINDOWS_PUBLISHER_NAME` together to sign future releases. Installations created before the updater was introduced need a one-time manual upgrade.
 
+After the first stable tag release, the current Windows installer is always available at `https://github.com/sanjuconnectrader/taskflow-desktop/releases/latest/download/TaskFlow-Setup.exe`.
+
 Secure Electron shell around a **locally bundled** TaskFlow Next.js export. Windows NSIS installer first; macOS DMG and Linux AppImage configurations are included for builds on their respective platforms.
 
 ## Run on Windows
