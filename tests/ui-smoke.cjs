@@ -5,6 +5,8 @@ const { _electron: electron } = require("@playwright/test");
   const app = await electron.launch({ args: ["."], env });
   try {
     const page = await app.firstWindow();
+    await page.route('**/api/v1/auth/me', route => route.fulfill({status:401,contentType:'application/json',body:JSON.stringify({error:{message:'Please sign in again.'}})}));
+    await page.reload();
     await page.getByRole("heading", { name: "Welcome back" }).waitFor();
     for (const width of [320, 360, 390, 768, 1280]) {
       await page.setViewportSize({ width, height: 850 });
@@ -28,6 +30,8 @@ const { _electron: electron } = require("@playwright/test");
       !["win32", "linux", "darwin"].includes(bridge.platform)
     )
       throw new Error("Renderer isolation check failed");
+    const installedVersion=await page.evaluate(()=>window.taskflow.getVersion());
+    if(installedVersion!==require('../package.json').version)throw Error('Installed version bridge mismatch');
     await page.evaluate(async () => {
       await window.taskflow.setSession("taskflow-smoke-token");
       if ((await window.taskflow.getSession()) !== "taskflow-smoke-token")
