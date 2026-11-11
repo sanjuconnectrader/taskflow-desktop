@@ -10,7 +10,7 @@ jobs:
   validate:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -35,10 +35,10 @@ jobs:
         run: |
           rules=$(gh api "repos/$GITHUB_REPOSITORY/environments/production" --jq '[.protection_rules[] | select(.type == "required_reviewers")] | length')
           test "$rules" -gt 0 || { echo "Configure required reviewers on the production environment before production releases."; exit 1; }
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Validate release inputs
         run: node -e "if(process.env.GITHUB_REF_NAME!=='v'+require('./package.json').version)throw Error('Version mismatch');if(!/^[a-f0-9]{40}$/.test(process.env.FRONTEND_REF||''))throw Error('Pin FRONTEND_REF to a reviewed commit SHA');if(!process.env.NEXT_PUBLIC_API_URL?.startsWith('https://'))throw Error('HTTPS API required')"
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           repository: sanjuconnectrader/taskflow-web
           ref: ${{ vars.FRONTEND_REF }}
