@@ -24,7 +24,7 @@ const { _electron: electron } = require("@playwright/test");
     }));
     if (
       bridge.node !== "undefined" ||
-      bridge.keys.sort().join(",") !== "getSession,onUpdateStatus,platform,setSession" ||
+      bridge.keys.sort().join(",") !== "getSession,getVersion,onUpdateStatus,platform,setSession" ||
       !["win32", "linux", "darwin"].includes(bridge.platform)
     )
       throw new Error("Renderer isolation check failed");

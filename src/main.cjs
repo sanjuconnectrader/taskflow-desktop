@@ -31,6 +31,10 @@ const trusted = (event) =>
   event.senderFrame?.url?.startsWith("taskflow://app/");
 const sessionPath = () => path.join(app.getPath("userData"), "session.enc");
 app.whenReady().then(() => {
+  ipcMain.handle('app:version',event=>{
+    if(!trusted(event)) throw new Error('Untrusted caller');
+    return app.getVersion();
+  });
   protocol.handle("taskflow", (request) => {
     try {
       const url = new URL(request.url);
