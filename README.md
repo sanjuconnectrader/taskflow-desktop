@@ -37,3 +37,7 @@ Node integration is disabled. Native permissions are denied by default. External
 ## GitHub Releases
 
 See [DEPLOYMENT.md](DEPLOYMENT.md). The tag workflow runs Windows CI, checks out the reviewed frontend SHA with a read-only credential, tests/builds it, performs startup smoke testing, packages NSIS and uploads the `.exe` to GitHub Releases after the production environment gate. Configure `FRONTEND_REF`, `API_PUBLIC_URL`, secrets and approval rules before tagging. Private releases remain accessible only to users with repository access.
+
+## Download
+
+[Download the Windows local-build installer](https://github.com/sanjuconnectrader/taskflow-desktop/releases/tag/local-2026-11-11). The repository is private and the installer is unsigned. Start your local API or set an HTTPS operator API through **API connection settings** on the sign-in screen. A separate hosted backend is required.

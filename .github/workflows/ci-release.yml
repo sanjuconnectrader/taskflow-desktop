@@ -28,6 +28,13 @@ jobs:
       NEXT_PUBLIC_API_URL: ${{ vars.API_PUBLIC_URL }}
       FRONTEND_REF: ${{ vars.FRONTEND_REF }}
     steps:
+      - name: Require configured production approval protection
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rules=$(gh api "repos/$GITHUB_REPOSITORY/environments/production" --jq '[.protection_rules[] | select(.type == "required_reviewers")] | length')
+          test "$rules" -gt 0 || { echo "Configure required reviewers on the production environment before production releases."; exit 1; }
       - uses: actions/checkout@v4
       - name: Validate release inputs
         run: node -e "if(process.env.GITHUB_REF_NAME!=='v'+require('./package.json').version)throw Error('Version mismatch');if(!/^[a-f0-9]{40}$/.test(process.env.FRONTEND_REF||''))throw Error('Pin FRONTEND_REF to a reviewed commit SHA');if(!process.env.NEXT_PUBLIC_API_URL?.startsWith('https://'))throw Error('HTTPS API required')"
