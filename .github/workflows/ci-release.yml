@@ -67,9 +67,9 @@ jobs:
         shell: pwsh
         run: |
           if (($env:CSC_LINK -or $env:CSC_KEY_PASSWORD -or $env:WINDOWS_PUBLISHER_NAME) -and -not ($env:CSC_LINK -and $env:CSC_KEY_PASSWORD -and $env:WINDOWS_PUBLISHER_NAME)) { throw 'Configure the certificate, password, and publisher name together.' }
-          $args = @('--win','nsis','--publish','never','--config.publish.provider=generic',"--config.publish.url=$env:NEXT_PUBLIC_API_URL/api/v1/updates/desktop/assets")
-          if ($env:WINDOWS_PUBLISHER_NAME) { $args += "--config.win.publisherName=$env:WINDOWS_PUBLISHER_NAME" }
-          npx electron-builder @args
+          $builderArgs = @('--win','nsis','--publish=never','--config.publish.provider=generic',"--config.publish.url=$env:NEXT_PUBLIC_API_URL/api/v1/updates/desktop/assets")
+          if ($env:WINDOWS_PUBLISHER_NAME) { $builderArgs += "--config.win.publisherName=$env:WINDOWS_PUBLISHER_NAME" }
+          & npx.cmd electron-builder @builderArgs
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           Copy-Item "release/TaskFlow-$($env:GITHUB_REF_NAME.Substring(1))-Setup.exe" "release/TaskFlow-Setup.exe"
         env:
