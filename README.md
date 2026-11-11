@@ -40,4 +40,4 @@ See [DEPLOYMENT.md](DEPLOYMENT.md). The tag workflow runs Windows CI, checks out
 
 ## Download
 
-[Download the Windows local-build installer](https://github.com/sanjuconnectrader/taskflow-desktop/releases/tag/local-2026-11-11). The repository is private and the installer is unsigned. Start your local API or set an HTTPS operator API through **API connection settings** on the sign-in screen. A separate hosted backend is required.
+[Download the Windows local-build installer](https://github.com/sanjuconnectrader/taskflow-desktop/releases/tag/local-2026-11-11-ui-cleanup). The repository is private and the installer is unsigned. Start your local API. For production, configure `NEXT_PUBLIC_API_URL` in the shared frontend before rebuilding the installer. A separate hosted backend is required.
