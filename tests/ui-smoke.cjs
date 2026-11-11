@@ -6,6 +6,17 @@ const { _electron: electron } = require("@playwright/test");
   try {
     const page = await app.firstWindow();
     await page.getByRole("heading", { name: "Welcome back" }).waitFor();
+    for (const width of [320, 360, 390, 768, 1280]) {
+      await page.setViewportSize({ width, height: 850 });
+      if (!(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)))
+        throw Error(`Login overflows at ${width}px`);
+    }
+    const password = page.locator('input[name="password"]');
+    await password.fill('visibility-check');
+    await page.getByRole('button', {name:'Show password', exact:true}).click();
+    if(await password.getAttribute('type') !== 'text') throw Error('Password reveal failed');
+    await page.getByRole('button', {name:'Hide password', exact:true}).click();
+    if(await password.getAttribute('type') !== 'password') throw Error('Password hiding failed');
     const bridge = await page.evaluate(() => ({
       node: typeof require,
       platform: window.taskflow?.platform,
@@ -13,7 +24,8 @@ const { _electron: electron } = require("@playwright/test");
     }));
     if (
       bridge.node !== "undefined" ||
-      bridge.keys.join(",") !== "platform,getSession,setSession"
+      bridge.keys.sort().join(",") !== "getSession,onUpdateStatus,platform,setSession" ||
+      !["win32", "linux", "darwin"].includes(bridge.platform)
     )
       throw new Error("Renderer isolation check failed");
     await page.evaluate(async () => {
