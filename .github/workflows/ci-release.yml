@@ -25,7 +25,7 @@ jobs:
     permissions:
       contents: write
     env:
-      NEXT_PUBLIC_API_URL: ${{ vars.API_PUBLIC_URL }}
+      NEXT_PUBLIC_API_URL: ${{ vars.API_PUBLIC_URL || 'https://taskflow-backend-ouuj.onrender.com' }}
       FRONTEND_REF: ${{ vars.FRONTEND_REF }}
     steps:
       - name: Require configured production approval protection
@@ -43,7 +43,6 @@ jobs:
           repository: sanjuconnectrader/taskflow-web
           ref: ${{ vars.FRONTEND_REF }}
           path: frontend-source
-          token: ${{ secrets.FRONTEND_READ_TOKEN }}
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -61,18 +60,32 @@ jobs:
       - run: npm run assets
         env:
           FRONTEND_OUT: frontend-source/out
+          NEXT_PUBLIC_API_URL: ${{ vars.API_PUBLIC_URL || 'https://taskflow-backend-ouuj.onrender.com' }}
       - run: npm run test:smoke
       - run: npm run test:ui
-      - run: npm run build:win
+      - name: Build installer and update metadata
+        shell: pwsh
+        run: |
+          if (($env:CSC_LINK -or $env:CSC_KEY_PASSWORD -or $env:WINDOWS_PUBLISHER_NAME) -and -not ($env:CSC_LINK -and $env:CSC_KEY_PASSWORD -and $env:WINDOWS_PUBLISHER_NAME)) { throw 'Configure the certificate, password, and publisher name together.' }
+          $args = @('--win','nsis','--publish','never','--config.publish.provider=generic',"--config.publish.url=$env:NEXT_PUBLIC_API_URL/api/v1/updates/desktop/assets")
+          if ($env:WINDOWS_PUBLISHER_NAME) { $args += "--config.win.publisherName=$env:WINDOWS_PUBLISHER_NAME" }
+          npx electron-builder @args
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
         env:
           CSC_LINK: ${{ secrets.WINDOWS_CSC_LINK }}
           CSC_KEY_PASSWORD: ${{ secrets.WINDOWS_CSC_KEY_PASSWORD }}
+          WINDOWS_PUBLISHER_NAME: ${{ vars.WINDOWS_PUBLISHER_NAME }}
       - uses: actions/upload-artifact@v4
         with:
           name: windows-installer
-          path: release/*.exe
+          path: |
+            release/*.exe
+            release/latest.yml
       - name: Publish installer
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" release/*.exe --verify-tag --generate-notes --title "TaskFlow $GITHUB_REF_NAME"
+        run: |
+          gh release create "$GITHUB_REF_NAME" --draft --verify-tag --generate-notes --title "TaskFlow $GITHUB_REF_NAME"
+          gh release upload "$GITHUB_REF_NAME" release/*.exe release/latest.yml
+          gh release edit "$GITHUB_REF_NAME" --draft=false --latest

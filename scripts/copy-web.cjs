@@ -9,4 +9,7 @@ if (!fs.existsSync(path.join(source, "index.html")))
     "Build frontend first, or set FRONTEND_OUT to a built export.",
   );
 fs.cpSync(source, path.join(root, "web"), { recursive: true });
+const api = process.env.NEXT_PUBLIC_API_URL || "https://taskflow-backend-ouuj.onrender.com";
+if (!/^https:\/\//.test(api) && !/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(api)) throw new Error("Invalid API origin.");
+fs.writeFileSync(path.join(root,"web","update-config.json"), JSON.stringify({apiOrigin:new URL(api).origin}));
 console.log("Shared frontend assets copied.");

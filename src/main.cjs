@@ -26,6 +26,7 @@ protocol.registerSchemesAsPrivileged([
 const webRoot = path.resolve(__dirname, "../web");
 const assetPath = require("./paths.cjs");
 let mainWindow;
+let updateSession = () => {};
 const trusted = (event) =>
   event.senderFrame?.url?.startsWith("taskflow://app/");
 const sessionPath = () => path.join(app.getPath("userData"), "session.enc");
@@ -63,11 +64,13 @@ app.whenReady().then(() => {
         await safeStorage.encryptStringAsync(value.result),
         { mode: 0o600 },
       );
+    updateSession(value.result);
     return value.result;
   });
   ipcMain.handle("session:set", async (event, value) => {
     if (!trusted(event)) throw new Error("Untrusted caller");
     if (value === null) {
+      updateSession(null);
       fs.rmSync(sessionPath(), { force: true });
       return;
     }
@@ -79,6 +82,7 @@ app.whenReady().then(() => {
       await safeStorage.encryptStringAsync(value),
       { mode: 0o600 },
     );
+    updateSession(value);
   });
   function createWindow() {
     let bounds = { width: 1440, height: 1000 };
@@ -154,6 +158,7 @@ app.whenReady().then(() => {
   if (!app.isPackaged) template[2].submenu.push({ role: "toggleDevTools" });
   Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   createWindow();
+  updateSession = require('./updates.cjs')(() => mainWindow);
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });

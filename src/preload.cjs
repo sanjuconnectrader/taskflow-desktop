@@ -5,5 +5,10 @@ contextBridge.exposeInMainWorld(
     platform: process.platform,
     getSession: () => ipcRenderer.invoke("session:get"),
     setSession: (value) => ipcRenderer.invoke("session:set", value),
+    onUpdateStatus: (callback) => {
+      const listener = (_event, value) => callback(value);
+      ipcRenderer.on('update:status', listener);
+      return () => ipcRenderer.removeListener('update:status', listener);
+    },
   }),
 );
