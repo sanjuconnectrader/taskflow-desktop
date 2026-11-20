@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@playwright/test": "^1.65.0",
-    "electron": "45.3.0",
+    "electron": "45.3.3",
     "electron-builder": "26.18.0",
     "prettier": "^3.9.10"
   },
