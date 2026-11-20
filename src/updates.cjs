@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 module.exports = function setupUpdates(getWindow) {
-  let apiOrigin, session, checking=false, promptedVersion=null, downloaded=false;
+  let apiOrigin, session, checking=false, promptedVersion=null, downloaded=false, installing=false;
   try { apiOrigin=JSON.parse(fs.readFileSync(path.join(__dirname,'../web/update-config.json'),'utf8')).apiOrigin; } catch { return () => {}; }
   if(!app.isPackaged || process.platform!=='win32' || !/^https:\/\//.test(apiOrigin)) return () => {};
   autoUpdater.setFeedURL({provider:'generic',url:`${apiOrigin}/api/v1/updates/desktop/assets`});
@@ -13,7 +13,7 @@ module.exports = function setupUpdates(getWindow) {
   autoUpdater.disableDifferentialDownload=true;
   const status=(state,extra={})=>getWindow()?.webContents.send('update:status',{state,...extra});
   autoUpdater.on('update-available',async info=>{
-    if(promptedVersion===info.version) return;
+    if(installing || promptedVersion===info.version) return;
     promptedVersion=info.version;
     const choice=await dialog.showMessageBox(getWindow(),{type:'info',title:'New Update Available',message:'New Update Available',detail:'A new version of TaskFlow is available with improvements, new features, and bug fixes.',buttons:['Update Now','Remind Me Later'],defaultId:0,cancelId:1,noLink:true});
     if(choice.response===0) {
@@ -34,5 +34,20 @@ module.exports = function setupUpdates(getWindow) {
     try {await autoUpdater.checkForUpdates();} catch {status('unavailable');} finally {checking=false;}
   }
   const timer=setInterval(check,6*60*60*1000);timer.unref();
-  return value=>{session=value;if(value) check();};
+  const setSession=value=>{session=value;if(value) check();};
+  setSession.install=async()=>{
+    if(!session) throw new Error('Please sign in before installing updates.');
+    if(downloaded) {autoUpdater.quitAndInstall(false,true);return;}
+    if(checking) throw new Error('An update check is running. Please try again shortly.');
+    if(installing) return;
+    installing=true;
+    try {
+    autoUpdater.requestHeaders={Authorization:`Bearer ${session}`};
+    const result=await autoUpdater.checkForUpdates();
+    if(!result || !result.updateInfo || result.updateInfo.version===app.getVersion()) return;
+    status('downloading',{percent:0});
+    await autoUpdater.downloadUpdate();
+    } finally {installing=false;}
+  };
+  return setSession;
 };

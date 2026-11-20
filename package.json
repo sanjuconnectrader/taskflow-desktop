@@ -1,7 +1,7 @@
 {
   "name": "taskflow-desktop",
   "productName": "TaskFlow",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "private": true,
   "description": "TaskFlow desktop client",
   "author": "TaskFlow",

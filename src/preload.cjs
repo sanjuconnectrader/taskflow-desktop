@@ -3,6 +3,7 @@ contextBridge.exposeInMainWorld(
   "taskflow",
   Object.freeze({
     platform: process.platform,
+    installUpdate: () => ipcRenderer.invoke('update:install'),
     getVersion: () => ipcRenderer.invoke('app:version'),
     getSession: () => ipcRenderer.invoke("session:get"),
     setSession: (value) => ipcRenderer.invoke("session:set", value),

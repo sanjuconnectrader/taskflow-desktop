@@ -31,6 +31,11 @@ const trusted = (event) =>
   event.senderFrame?.url?.startsWith("taskflow://app/");
 const sessionPath = () => path.join(app.getPath("userData"), "session.enc");
 app.whenReady().then(() => {
+  ipcMain.handle('update:install',async event=>{
+    if(!trusted(event)) throw new Error('Untrusted caller');
+    if(!updateSession.install) throw new Error('Updates require an installed Windows release.');
+    await updateSession.install();
+  });
   ipcMain.handle('app:version',event=>{
     if(!trusted(event)) throw new Error('Untrusted caller');
     return app.getVersion();
